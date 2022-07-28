@@ -1,0 +1,384 @@
+#############################TakeHomeAssignment 27/07/2022##################################################################################################
+Name: Padamaraj Anandrao Kore
+Email: padmaraj.com@gmail.com
+#########################################################################################################################################################
+
+Ams:
+
+MySQl database coomands:
+
+
+create database Ecommerce;
+
+use Ecommerce;
+
+
+create table Product
+(
+id BIGINT primary key,
+sku VARCHAR(255),
+Proname VARCHAR(255),
+description VARCHAR(255),
+unitprice DECIMAL(13,2),
+imageurl VARCHAR(255),
+unitsinstock INT,
+datecreated DATE,
+lastupdated DATE,
+categoryid BIGINT,
+foreign key(categoryid) references category(categoryid)
+);
+
+insert into Product values(10001,"12345678","Laptop","HP Laptop",100000,"www.laptopimg",10,"2022-10-11","2022-11-11",1001);
+
+insert into category values(1001,"Electronics");
+select * from product;
+
+
+create table category
+(
+categoryid BIGINT primary key,
+categoryname VARCHAR(255)
+);
+
+
+
+
+SpringBootCode:
+
+
+package com.example.product;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class EcommerceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(EcommerceApplication.class, args);
+	}
+
+}
+
+
+package com.example.product.Controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.product.Entity.Product;
+import com.example.product.Service.ProductService;
+
+@RestController
+@RequestMapping("/product")
+public class ProductController {
+	
+	@Autowired
+	private ProductService prodService;
+	
+	@GetMapping("/prodList")
+	private List<Product> findAll(){
+		return prodService.findAll();
+	}
+    
+	@GetMapping("/productid/{id}")
+	public Product findById(@PathVariable int id) {
+		return prodService.findById(id);
+	}
+	
+	@PostMapping("/save")
+	public void saveProduct(@RequestBody Product product) {
+		prodService.saveProduct(product);
+	}
+	
+	@PutMapping("/updateProduct")
+	public Product updateProduct(@RequestBody Product product) {
+		prodService.saveProduct(product);
+		return product;
+	}
+	
+	@DeleteMapping("/delete/{id}")
+	public String deleteById(@PathVariable int id) {
+		Product p = prodService.findById(id);
+		if(p == null)
+			throw new  RuntimeException("Product id :" + id+" details not found");
+		prodService.deleteById(id);
+		return "Product :"+id +"deleted";
+	}
+	
+}
+
+ 
+
+package com.example.product.Entity;
+
+
+import java.sql.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "Product")
+public class Product {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
+	private int id;
+
+	@Column(name = "sku")
+	private String sku;
+
+	@Column(name = "proname")
+	private String proname;
+
+	@Column(name = "description")
+	private String description;
+
+	@Column(name = "unitprice")
+	private float unitprice;
+
+	@Column(name = "imageurl")
+	private String imageurl;
+
+	@Column(name = "unitsinstock")
+	private int unitsinstock;
+
+	@Column(name = "datecreated")
+	private Date datecreated;
+
+	@Column(name = "lastupdated")
+	private Date lastupdated;
+
+	@Column(name = "categoryid")
+	private int categoryid;
+
+	public Product() {
+		super();
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getSku() {
+		return sku;
+	}
+
+	public void setSku(String sku) {
+		this.sku = sku;
+	}
+
+	public String getProname() {
+		return proname;
+	}
+
+	public void setProname(String proname) {
+		this.proname = proname;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public float getUnitprice() {
+		return unitprice;
+	}
+
+	public void setUnitprice(float unitprice) {
+		this.unitprice = unitprice;
+	}
+
+	public String getImageurl() {
+		return imageurl;
+	}
+
+	public void setImageurl(String imageurl) {
+		this.imageurl = imageurl;
+	}
+
+	public int getUnitsinstock() {
+		return unitsinstock;
+	}
+
+	public void setUnitsinstock(int unitsinstock) {
+		this.unitsinstock = unitsinstock;
+	}
+
+	public Date getDatecreated() {
+		return datecreated;
+	}
+
+	public void setDatecreated(Date datecreated) {
+		this.datecreated = datecreated;
+	}
+
+	public Date getLastupdated() {
+		return lastupdated;
+	}
+
+	public void setLastupdated(Date lastupdated) {
+		this.lastupdated = lastupdated;
+	}
+
+	public int getCategoryid() {
+		return categoryid;
+	}
+
+	public void setCategoryid(int categoryid) {
+		this.categoryid = categoryid;
+	}
+
+}
+
+
+package com.example.product.repository;
+
+import java.util.List;
+
+import com.example.product.Entity.Product;
+public interface ProductRepository {
+	
+	public List<Product> findAll();
+	public Product findById(int id);
+    public void saveProduct(Product Product);
+    public void deleteById(int Id);
+}
+
+
+
+package com.example.product.repository;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import com.example.product.Entity.Product;
+
+@Repository
+public class ProductRepositoryImpl implements ProductRepository {
+	
+	@Autowired
+	EntityManager entitymanager;
+	
+	@Override
+	public List<Product> findAll() {
+		
+		Session currentSession = entitymanager.unwrap(Session.class);
+		Query<Product> query = currentSession.createQuery("select e from Product e", Product.class);
+		
+		List<Product> emplist = query.getResultList();
+		return emplist;
+		
+	}
+	
+	public Product findById(int id) {
+		Session currentSession = entitymanager.unwrap(Session.class);
+		return currentSession.get(Product.class, id);
+	}
+
+	@Override
+	public void saveProduct(Product Product) {
+      Session currentSession = entitymanager.unwrap(Session.class);
+      currentSession.saveOrUpdate(Product);
+	}
+
+	@Transactional
+	public void deleteById(int Id) {
+		Session currentSession = entitymanager.unwrap(Session.class);
+		Query<Product> query = currentSession.createQuery("delete from Product where Id = :prodid");
+		query.setParameter("prodid", Id);
+		query.executeUpdate();
+	}
+}
+	
+
+
+package com.example.product.Service;
+
+import java.util.List;
+
+import com.example.product.Entity.Product;
+public interface ProductService {
+	
+	public List<Product> findAll();
+	public Product findById(int id);
+	public void saveProduct(Product product);
+	public void deleteById(int Id);
+
+}
+  
+
+
+package com.example.product.Service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.product.Entity.Product;
+import com.example.product.repository.ProductRepositoryImpl;
+
+@Service
+public class ProductServiceImpl implements ProductService {
+
+	@Autowired
+	ProductRepositoryImpl productrepo;
+	
+	
+	public List<Product> findAll() {
+		
+		return productrepo.findAll();
+	}
+
+
+	@Override
+	public Product findById(int id) {
+		return productrepo.findById(id);
+	}
+
+
+	public void saveProduct(Product product) {
+		productrepo.saveProduct(product);
+    		
+	}
+
+
+	@Override
+	public void deleteById(int Id) {
+    productrepo.deleteById(Id);		
+	}
+
+	
+}
+
+
+
+
