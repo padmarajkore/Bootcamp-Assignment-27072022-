@@ -1,1 +1,0 @@
-# NPCI-projects
